@@ -22,7 +22,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Import models (and Base) to make sure Alembic knows about them
-from app.models import Base, User, Music, Playlist  # <-- Import models here!
+from api.models import Base, User, Music, Playlist  # <-- Import models here!
 
 target_metadata = Base.metadata  # Alembic needs this to detect changes in your models
 

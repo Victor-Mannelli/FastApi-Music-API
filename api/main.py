@@ -1,13 +1,16 @@
-from app.config import SessionLocal
+import logging
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
-import logging
+from api.config import SessionLocal
+from .routers.user import router as users_router
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+app.include_router(users_router)
 
 @app.get("/health")
 def health_check():
