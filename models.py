@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Table
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from config import Base
+
+Base = declarative_base();
 
 # Many-to-Many Relationship Table
 user_music_association = Table(
