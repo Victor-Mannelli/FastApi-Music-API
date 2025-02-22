@@ -1,1 +1,1 @@
-from .config import SessionLocal
+from .setup import SessionLocal

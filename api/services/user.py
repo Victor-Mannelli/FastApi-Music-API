@@ -3,14 +3,15 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from ..db.models import User as userModel
 from ..schemas import user as userSchemas
+from ..services import auth as authServices
 
-print(f"DEBUG: Imported User: {userModel}")
 
 def create_user(db: Session, user: userSchemas.UserCreate):
+    hashed_password = authServices.get_password_hash(user.password)  # Hash the password
     db_user = userModel(
         username=user.username,
         email=user.email,
-        password=user.password  # We will hash the password later in the authentication part
+        password=hashed_password,  # Store the hashed password
     )
     db.add(db_user)
     try:
