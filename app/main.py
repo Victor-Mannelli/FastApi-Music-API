@@ -1,6 +1,6 @@
+from app.config import SessionLocal
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
-from config import SessionLocal
 import logging
 
 # Set up logging

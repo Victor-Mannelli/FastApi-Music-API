@@ -10,7 +10,7 @@ __pycache__/
 .env
 
 # Ignore database migrations (optional, can be useful to keep)
-migrations/
+# migrations/
 
 # Ignore IDE/editor settings (optional)
 .vscode/
