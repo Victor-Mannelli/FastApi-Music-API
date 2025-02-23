@@ -1,9 +1,9 @@
 from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from ..services import auth as authServices
 from ..db.models import User as UserModel
 from ..schemas import user as UserSchemas
-from ..services import auth as authServices
 
 
 def create_user(db: Session, user: UserSchemas.UserCreate):
@@ -19,7 +19,10 @@ def create_user(db: Session, user: UserSchemas.UserCreate):
         db.refresh(db_user)
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Username or email already exists")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username or email already exists",
+        )
     return db_user
 
 
@@ -34,7 +37,9 @@ def get_users(db: Session, skip: int = 0, limit: int = 10):
 def update_user(db: Session, user_id: int, user: UserSchemas.UserUpdate):
     db_user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     if user.username:
         db_user.username = user.username
     if user.email:
@@ -47,7 +52,9 @@ def update_user(db: Session, user_id: int, user: UserSchemas.UserUpdate):
 def delete_user(db: Session, user_id: int):
     db_user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     db.delete(db_user)
     db.commit()
     return db_user
