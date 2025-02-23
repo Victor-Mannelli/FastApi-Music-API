@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from api.config.setup import ACCESS_TOKEN_EXPIRE_MINUTES
 from ..services import user as userServices
@@ -10,23 +9,15 @@ from ..db.core import get_db
 
 router = APIRouter(prefix="/users")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    payload = authServices.verify_token(token)
-    if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    return payload
-
 
 @router.get("/me")
 def get_current_user_info(
-    current_user: userSchema.UserBase = Depends(get_current_user),
+    current_user: userSchema.UserBase = Depends(authServices.get_current_user),
 ):
     return {"user": current_user}
 
 
+# * Login
 @router.post("/login")
 def login(user_data: userSchema.UserLogin, db: Session = Depends(get_db)):
     user = authServices.authenticate_user(db, user_data.email, user_data.password)
@@ -40,12 +31,13 @@ def login(user_data: userSchema.UserLogin, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+# * Registration
 @router.post("", response_model=userSchema.UserOut)
 def create_user(user: userSchema.UserCreate, db: Session = Depends(get_db)):
     return userServices.create_user(db=db, user=user)
 
 
-# Get a user by ID
+# * Get a user by ID
 @router.get("/{user_id}", response_model=userSchema.UserOut)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     db_user = userServices.get_user(db=db, user_id=user_id)
@@ -54,22 +46,39 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-# Get all users
+# * Get all users
 @router.get("", response_model=list[userSchema.UserOut])
 def get_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     users = userServices.get_users(db=db, skip=skip, limit=limit)
     return users
 
 
-# Update user by ID
+# * Update user by ID
 @router.put("/{user_id}", response_model=userSchema.UserOut)
 def update_user(
-    user_id: int, user: userSchema.UserUpdate, db: Session = Depends(get_db)
+    user_id: int,
+    user: userSchema.UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: userSchema.UserOut = Depends(authServices.get_current_user),
 ):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to delete this user",
+        )
     return userServices.update_user(db=db, user_id=user_id, user=user)
 
 
 # Delete user by ID
 @router.delete("/{user_id}", response_model=userSchema.UserOut)
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: userSchema.UserOut = Depends(authServices.get_current_user),
+):
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to delete this user",
+        )
     return userServices.delete_user(db=db, user_id=user_id)
