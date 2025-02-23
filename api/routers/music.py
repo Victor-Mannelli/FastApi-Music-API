@@ -15,14 +15,14 @@ router = APIRouter(prefix="/music")
 def add_music(
     music: music_schema.MusicBase,
     db: Session = Depends(get_db),
-    current_user: user_schema.UserJwtPayload = Depends(auth_services.get_current_user),
+    current_user: user_schema.UserOut = Depends(auth_services.get_current_user),
 ):
     if not current_user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You need to be logged in to add music",
         )
-    return music_services.add_music(db=db, music=music, user_id=current_user["sub"])
+    return music_services.add_music(db=db, music=music, user_id=current_user.id)
 
 
 # * Get all musics
@@ -60,7 +60,7 @@ def update_music(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Music not found"
         )
-    if music.added_by != current_user["sub"]:
+    if music.added_by != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only update the music you added",
@@ -80,7 +80,7 @@ def remove_music(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Music not found"
         )
-    if music.added_by != current_user["sub"]:
+    if music.added_by != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only delete the music you added",

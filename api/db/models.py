@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from ..config.setup import Base
 
@@ -39,9 +39,11 @@ class Music(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
-    artist = Column(String)
+    artist = Column(String, index=True)
     link = Column(String)
     added_by = Column(Integer, ForeignKey("users.id"))
+
+    __table_args__ = (UniqueConstraint("title", "artist", name="_title_artist_uc"),)
 
     # Users who have saved this song
     users = relationship(
@@ -60,9 +62,9 @@ class Playlist(Base):
     name = Column(String, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
-    # The user who owns the playlist
+    # * The user who owns the playlist
     owner = relationship("User", back_populates="playlists")
-    # Songs that are in this playlist
+    # * Songs that are in this playlist
     musics = relationship(
         "Music", secondary=playlist_music_association, back_populates="playlists"
     )
