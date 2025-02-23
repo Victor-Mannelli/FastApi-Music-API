@@ -47,6 +47,7 @@ def get_user_added_musics(
     return musics
 
 
+# * Updated music added by user
 @router.put("/{music_id}", response_model=music_schema.MusicOut)
 def update_music(
     music_id: int,
@@ -67,7 +68,7 @@ def update_music(
     return music_services.update_music(db=db, music_id=music_id, music=updated_music)
 
 
-# * Remove music from own list
+# * Remove music added by user
 @router.delete("/{music_id}", response_model=music_schema.MusicOut)
 def remove_music(
     music_id: int,

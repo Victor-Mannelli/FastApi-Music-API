@@ -1,12 +1,12 @@
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from ..db.models import Music as musicModel
-from ..schemas import music as musicSchemas
+from ..db.models import Music as music_model
+from ..schemas import music as music_schemas
 
 
-def add_music(db: Session, music: musicSchemas.MusicBase, user_id: int):
-    db_music = musicModel(
+def add_music(db: Session, music: music_schemas.MusicBase, user_id: int):
+    db_music = music_model(
         title=music.title,
         artist=music.artist,
         link=music.link,
@@ -26,13 +26,13 @@ def add_music(db: Session, music: musicSchemas.MusicBase, user_id: int):
 
 
 def get_musics(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(musicModel).offset(skip).limit(limit).all()
+    return db.query(music_model).offset(skip).limit(limit).all()
 
 
 def get_user_added_musics(db: Session, user_id: int, skip: int = 0, limit: int = 10):
     return (
-        db.query(musicModel)
-        .filter(musicModel.added_by == user_id)
+        db.query(music_model)
+        .filter(music_model.added_by == user_id)
         .offset(skip)
         .limit(limit)
         .all()
@@ -40,11 +40,11 @@ def get_user_added_musics(db: Session, user_id: int, skip: int = 0, limit: int =
 
 
 def get_music_by_id(db: Session, music_id: int):
-    return db.query(musicModel).filter(musicModel.id == music_id).first()
+    return db.query(music_model).filter(music_model.id == music_id).first()
 
 
-def update_music(db: Session, music_id: int, music: musicSchemas.MusicUpdate):
-    db_music = db.query(musicModel).filter(musicModel.id == music_id).first()
+def update_music(db: Session, music_id: int, music: music_schemas.MusicUpdate):
+    db_music = db.query(music_model).filter(music_model.id == music_id).first()
     if not db_music:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Music not found"
@@ -61,7 +61,7 @@ def update_music(db: Session, music_id: int, music: musicSchemas.MusicUpdate):
 
 
 def remove_music(db: Session, music_id: int):
-    db_music = db.query(musicModel).filter(musicModel.id == music_id).first()
+    db_music = db.query(music_model).filter(music_model.id == music_id).first()
     if not db_music:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Music not found"
