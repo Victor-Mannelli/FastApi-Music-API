@@ -6,5 +6,5 @@ start:
 dbsetup:
 	alembic upgrade head
 
-gp:
-	pip freeze > requirements.txt & git push
+add:
+	pip freeze > requirements.txt & git add .
