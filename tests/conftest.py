@@ -20,7 +20,9 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 # Create the test database schema
 @pytest.fixture(scope="function")
 def db():
+    Base.metadata.drop_all(bind=engine)  # Ensure a clean start
     Base.metadata.create_all(bind=engine)  # Create tables before each test
+    
     session = TestingSessionLocal()
     try:
         yield session
