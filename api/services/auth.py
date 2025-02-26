@@ -56,7 +56,7 @@ def authenticate_user(db: Session, email: str, password: str):
 
 
 # * creates and returns a JWT token
-# * dict data is the user info
+# * dict data is user info that's goona be JWT payload data
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
