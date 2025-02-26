@@ -1,4 +1,4 @@
-from api.config import SessionLocal  
+from app.config import SessionLocal  
   
 def get_db():
     db = SessionLocal()

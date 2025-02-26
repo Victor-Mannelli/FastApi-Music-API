@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from api.config.setup import ACCESS_TOKEN_EXPIRE_MINUTES
+from app.config.setup import ACCESS_TOKEN_EXPIRE_MINUTES
 from sqlalchemy.orm import Session
 from ..services import user as user_services
 from ..services import auth as auth_services

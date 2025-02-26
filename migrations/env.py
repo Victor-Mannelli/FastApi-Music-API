@@ -1,4 +1,4 @@
-from api.config.setup import DATABASE_URL
+from app.config.setup import DATABASE_URL
 from logging.config import fileConfig
 from sqlalchemy import create_engine, pool
 from alembic import context
@@ -15,7 +15,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Import models (and Base) to make sure Alembic knows about them
-from api.db.models import Base, User, Music, Playlist  # <-- Import models here!
+from app.db.models import Base, User, Music, Playlist  # <-- Import models here!
 
 target_metadata = Base.metadata  # Alembic needs this to detect changes in your models
 

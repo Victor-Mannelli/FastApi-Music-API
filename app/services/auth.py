@@ -1,9 +1,9 @@
 import jwt
-from api.config.setup import JWT_SECRET, ALGORITHM
+from app.config.setup import JWT_SECRET, ALGORITHM
 from ..db.models import User as user_model
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
-from api.db.core import get_db
+from app.db.core import get_db
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session

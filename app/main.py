@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
-from api.config import SessionLocal
+from app.config import SessionLocal
 from .routers.user import router as users_router
 from .routers.music import router as musics_router
 from .routers.playlist import router as playlists_router
