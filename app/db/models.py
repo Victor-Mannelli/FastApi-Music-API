@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, UniqueConstraint
-from sqlalchemy.orm import relationship
-from ..config.setup import Base
+from sqlalchemy.orm import relationship, registry
+from app.config.setup import Base
+
+table_registry = registry()
+
 
 # Many-to-Many Relationship Table between User and Music (for stored songs)
 user_music_association = Table(
@@ -17,7 +20,7 @@ playlist_music_association = Table(
     Column("music_id", Integer, ForeignKey("musics.id"), primary_key=True),
 )
 
-
+@table_registry.mapped_as_dataclass
 class User(Base):
     __tablename__ = "users"
 
@@ -33,7 +36,7 @@ class User(Base):
     # Playlists the user owns
     playlists = relationship("Playlist", back_populates="owner")
 
-
+@table_registry.mapped_as_dataclass
 class Music(Base):
     __tablename__ = "musics"
 
@@ -55,6 +58,7 @@ class Music(Base):
     )
 
 
+@table_registry.mapped_as_dataclass
 class Playlist(Base):
     __tablename__ = "playlists"
 
