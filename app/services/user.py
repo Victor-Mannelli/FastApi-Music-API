@@ -46,19 +46,22 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 10):
 
 
 # ! This is not updating user password
-async def update_user(db: AsyncSession, user_id: int, user: user_schemas.UserUpdate):
+async def update_user(
+    db: AsyncSession, user_id: int, updated_user: user_schemas.UserUpdate
+):
     db_user = await get_user(db=db, user_id=user_id)
-    if user.username:
-        db_user.username = user.username
-    if user.email:
-        db_user.email = user.email
+    if updated_user.username:
+        db_user.username = updated_user.username
+    if updated_user.email:
+        db_user.email = updated_user.email
     await db.commit()
     await db.refresh(db_user)
     return db_user
 
 
 async def delete_user(db: AsyncSession, user_id: int):
-    db_user = get_user(db=db, user_id=user_id)
+    db_user = await get_user(db=db, user_id=user_id)
+
     await db.delete(db_user)
     await db.commit()
     return db_user

@@ -71,12 +71,14 @@ async def get_users(
 @router.put("/{user_id}", response_model=user_schema.UserOut)
 async def update_user(
     user_id: int,
-    user: user_schema.UserUpdate,
+    updated_user: user_schema.UserUpdate,
     db: Session = Depends(get_async_db),
     current_user: user_schema.UserOut = Depends(auth_services.get_current_user),
 ):
     checkUserAuthenticity(user_id, current_user_id=current_user.id)
-    return await user_services.update_user(db=db, user_id=user_id, user=user)
+    return await user_services.update_user(
+        db=db, user_id=user_id, updated_user=updated_user
+    )
 
 
 # * Delete user by ID

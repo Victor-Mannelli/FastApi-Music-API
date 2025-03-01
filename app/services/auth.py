@@ -29,8 +29,7 @@ async def get_current_user(
         )
 
     # * Get the user from the database based on the user_id
-    result = await db.execute(select(user_model).filter(user_model.id == user_id))
-    user = result.scalars().first()
+    user = await db.get(user_model, user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"

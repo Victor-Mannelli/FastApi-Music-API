@@ -1,28 +1,25 @@
-import httpx
 import pytest
 
 
 async def test_get_all_music(client):
     response = await client.get("/music/all")
     assert response.status_code == 200
-    assert response.json() == []  # Expect an empty list since no music is added yet
+
+    json_response = response.json()
+
+    # Expect list with one music from seed
+    assert len(json_response) == 1
+
+    # Check if the expected music is in the response JSON
+    assert json_response[0]["title"] == "Seed Song"
+    assert json_response[0]["artist"] == "Seed Artist"
+    assert json_response[0]["link"] == "https://example.com/seed"
 
 
 async def test_add_music(client):
-    # 1. Create a user
-    user_data = {
-        "username": "your_username",
-        "email": "test@example.com",
-        "password": "password123",
-    }
-    create_user_response = await client.post("/users", json=user_data)
-    assert (
-        create_user_response.status_code == 201
-    )  # Ensure user is created successfully
-
-    # 2. Login and get a token
+    # 1. Login with seeded account and get a token
     login_data = {
-        "email": "test@example.com",
+        "email": "seed_user@email.com",
         "password": "password123",
     }
     login_response = await client.post(
@@ -51,7 +48,16 @@ async def test_add_music(client):
     assert json_response["link"] == music_data["link"]
 
 
-async def test_get_all_music_after_adding(client):
-    response = await client.get("/music/all")
+async def test_get_music_added_by_user(client):
+    response = await client.get("/music/1")
     assert response.status_code == 200
-    assert len(response.json()) == 1  # Now we should have one music in the database
+    json_response = response.json()
+    # Expect seed + added music
+    assert len(json_response) == 2
+    print(json_response)
+    assert json_response[0]["title"] == "Seed Song"
+    assert json_response[0]["artist"] == "Seed Artist"
+    assert json_response[0]["link"] == "https://example.com/seed"
+    assert json_response[1]["title"] == "Imagine"
+    assert json_response[1]["artist"] == "John Lennon"
+    assert json_response[1]["link"] == "https://example.com/imagine"
