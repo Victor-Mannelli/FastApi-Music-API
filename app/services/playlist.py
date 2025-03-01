@@ -1,12 +1,16 @@
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, subqueryload
-from ..db.models import Playlist as playlist_model
-from ..db.models import Music as music_model
-from ..schemas import playlist as playlist_schemas
+from sqlalchemy.future import select
+from app.services import music as music_service
+from app.db.models import Playlist as playlist_model
+from app.schemas import playlist as playlist_schemas
+from app.db.models import Music as music_model
 
 
-def create_playlist(db: Session, playlist: playlist_schemas.PlaylistBase, user_id: int):
+async def create_playlist(
+    db: Session, playlist: playlist_schemas.PlaylistBase, user_id: int
+):
     db_playlist = playlist_model(name=playlist.name, owner_id=user_id)
     db.add(db_playlist)
     try:
@@ -21,38 +25,39 @@ def create_playlist(db: Session, playlist: playlist_schemas.PlaylistBase, user_i
     return db_playlist
 
 
-def add_music_to_playlist(db: Session, music_id: int, playlist_id: int):
-    db_playlist = (
-        db.query(playlist_model).filter(playlist_model.id == playlist_id).first()
-    )
+async def add_music_to_playlist(db: Session, music_id: int, playlist_id: int):
+    statement = select(playlist_model).filter(playlist_model.id == playlist_id)
+    db_playlist = await db.execute(statement).scalar_one_or_none()
     if not db_playlist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Playlist not found"
         )
-    db_music = db.query(music_model).filter(music_model.id == music_id).first()
+    db_music = await music_service.get_music_by_id(music_id)
     if db_music in db_playlist.musics:
         raise HTTPException(
             status_code=400, detail="Music already exists in the playlist"
         )
     db_playlist.musics.append(db_music)
     try:
-        db.commit()
+        await db.commit()
     except IntegrityError:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(status_code=400, detail="Error adding music to playlist")
 
     return db_playlist
 
 
-def get_playlist_by_id(db: Session, playlist_id: int):
-    return db.query(playlist_model).filter(playlist_model.id == playlist_id).first()
+async def get_playlist_by_id(db: Session, playlist_id: int):
+    try:
+        return await db.get(playlist_model, playlist_id)
+    except NoResultFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Playlist not found",
+        )
 
 
-def get_user_playlists(db: Session, user_id: int):
-    return db.query(playlist_model).filter(playlist_model.owner_id == user_id).all()
-
-
-def get_playlist_musics(db: Session, playlist_id: int):
+async def get_playlist_musics(db: Session, playlist_id: int):
     return (
         db.query(playlist_model)
         .filter(playlist_model.id == playlist_id)
@@ -61,49 +66,32 @@ def get_playlist_musics(db: Session, playlist_id: int):
     )
 
 
-def remove_music_from_playlist(db: Session, music_id: int, playlist_id: int):
-    db_playlist = (
-        db.query(playlist_model).filter(playlist_model.id == playlist_id).first()
-    )
-    if not db_playlist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Playlist not found"
-        )
-    db_music = db.query(music_model).filter(music_model.id == music_id).first()
+async def remove_music_from_playlist(db: Session, music_id: int, playlist_id: int):
+    db_playlist = await get_playlist_by_id(db=db, playlist_id=playlist_id)
+    db_music = await db.get(music_model, music_id)
     if db_music not in db_playlist.musics:
         raise HTTPException(
             status_code=400, detail="Music does not exist in the playlist"
         )
+
     db_playlist.musics.remove(db_music)
-    db.commit()
+    await db.commit()
     return db_playlist
 
 
-def update_playlist(
+async def update_playlist(
     db: Session, playlist_id: int, playlist: playlist_schemas.PlaylistUpdate
 ):
-    db_playlist = (
-        db.query(playlist_model).filter(playlist_model.id == playlist_id).first()
-    )
-    if not db_playlist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Playlist not found"
-        )
+    db_playlist = await get_playlist_by_id(db=db, playlist_id=playlist_id)
     if playlist.name:
         db_playlist.name = playlist.name
-    db.commit()
-    db.refresh(db_playlist)
+    await db.commit()
+    await db.refresh(db_playlist)
     return db_playlist
 
 
-def delete_playlist(db: Session, playlist_id: int):
-    db_playlist = (
-        db.query(playlist_model).filter(playlist_model.id == playlist_id).first()
-    )
-    if not db_playlist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Playlist not found"
-        )
-    db.delete(db_playlist)
-    db.commit()
+async def delete_playlist(db: Session, playlist_id: int):
+    db_playlist = await get_playlist_by_id(db=db, playlist_id=playlist_id)
+    await db.delete(db_playlist)
+    await db.commit()
     return db_playlist

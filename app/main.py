@@ -1,13 +1,13 @@
 import logging
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
-from app.config import SessionLocal
+from app.config.setup import AsyncSessionLocal
 from .routers.user import router as users_router
 from .routers.music import router as musics_router
 from .routers.playlist import router as playlists_router
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -21,7 +21,7 @@ app.include_router(playlists_router)
 def health_check():
     try:
         # Using a context manager to automatically close the session
-        with SessionLocal() as db:
+        with AsyncSessionLocal() as db:
             db.execute(text("SELECT 1"))  # Running a raw SQL query with text()
         return {"status": "Database connected!"}
     except Exception as e:

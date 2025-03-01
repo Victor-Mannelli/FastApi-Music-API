@@ -1,6 +1,6 @@
 import os
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
 from dotenv import load_dotenv
 
 load_dotenv()  # Loads environment variables from .env
@@ -16,8 +16,10 @@ if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set. Check your .env file.")
 
 
-engine = create_engine(DATABASE_URL)  # Creates the connection to PostgreSQL.
-SessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine
-)  # Used to interact with the DB.
+# Creates the connection to PostgreSQL.
+engine = create_async_engine(DATABASE_URL)
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine, class_=AsyncSession, expire_on_commit=False
+)
+
 Base = declarative_base()  # The base class for defining models.

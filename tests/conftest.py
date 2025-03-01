@@ -4,37 +4,51 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from httpx import AsyncClient, ASGITransport
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from app.config.setup import Base  # Import your SQLAlchemy Base
-from app.db.core import get_db  # Your dependency function for retrieving the DB session
-from fastapi.testclient import TestClient
+from app.db.core import (
+    get_async_db,
+)  # Your dependency function for retrieving the DB session
 from app.main import app
+from app.db.models import User, Music, Playlist
 
 # Use an in-memory SQLite database
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True)
+TestingSessionLocal = async_sessionmaker(
+    autocommit=False, autoflush=False, class_=AsyncSession, bind=engine
+)
 
-# Create the test database schema
+
+# Create the test database schema once before all tests
+@pytest.fixture(scope="session", autouse=True)
+async def setup_database():
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.drop_all)
+
+
 @pytest.fixture(scope="function")
-def db():
-    Base.metadata.drop_all(bind=engine)  # Ensure a clean start
-    Base.metadata.create_all(bind=engine)  # Create tables before each test
-    
+async def db():
     session = TestingSessionLocal()
     try:
         yield session
     finally:
-        session.close()
-        Base.metadata.drop_all(bind=engine)  # Clean up after each test
+        await session.close()
+
 
 # Override FastAPI's get_db dependency to use the test database
 @pytest.fixture(scope="function")
-def client(db):
-    def override_get_db():
+async def client(db):
+    async def override_get_db():
         yield db
 
-    app.dependency_overrides[get_db] = override_get_db
-    yield TestClient(app)
+    app.dependency_overrides[get_async_db] = override_get_db
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
