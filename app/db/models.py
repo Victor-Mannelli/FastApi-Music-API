@@ -31,7 +31,7 @@ class User(Base):
 
     # Songs added by the user
     added_musics = relationship(
-        "Music", back_populates="added_by", cascade="all, delete"
+        "Music", back_populates="added_by_user", cascade="all, delete"
     )
 
     # Playlists the user owns
@@ -50,7 +50,7 @@ class Music(Base):
     __table_args__ = (UniqueConstraint("title", "artist", name="_title_artist_uc"),)
 
     # User who added the song
-    added_by = relationship("User", back_populates="added_musics")
+    added_by_user = relationship("User", back_populates="added_musics")
 
     # Playlists this song belongs to
     # secondary means it's a many to many relation that is using another table for relation

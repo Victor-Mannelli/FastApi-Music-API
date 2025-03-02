@@ -12,11 +12,11 @@ router = APIRouter(prefix="/users")
 
 
 # * Get user info and checks if token is valid
-@router.get("/me")
+@router.get("/me", response_model=user_schema.UserOut)
 async def get_current_user_info(
     current_user: user_schema.UserBase = Depends(auth_services.get_current_user),
 ):
-    return {"user": current_user}
+    return current_user
 
 
 # * Login
