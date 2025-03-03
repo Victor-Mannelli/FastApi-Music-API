@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.config.setup import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.utils.functions import checkUserAuthenticity
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.services import user as user_services
 from app.services import auth as auth_services
 from app.schemas import user as user_schema
 from app.db.core import get_async_db
-from sqlalchemy.orm import Session
 from datetime import timedelta
 
 router = APIRouter(prefix="/users")
@@ -21,7 +21,9 @@ async def get_current_user_info(
 
 # * Login
 @router.post("/login", response_model=user_schema.LoginOut)
-async def login(user_data: user_schema.UserLogin, db: Session = Depends(get_async_db)):
+async def login(
+    user_data: user_schema.UserLogin, db: AsyncSession = Depends(get_async_db)
+):
     user = await auth_services.authenticate_user(
         db, user_data.email, user_data.password
     )
@@ -42,14 +44,14 @@ async def login(user_data: user_schema.UserLogin, db: Session = Depends(get_asyn
     "", response_model=user_schema.UserOut, status_code=status.HTTP_201_CREATED
 )
 async def create_user(
-    user: user_schema.UserCreate, db: Session = Depends(get_async_db)
+    user: user_schema.UserCreate, db: AsyncSession = Depends(get_async_db)
 ):
     return await user_services.create_user(db=db, user=user)
 
 
 # * Get a user by ID
 @router.get("/{user_id}", response_model=user_schema.UserOut)
-async def get_user(user_id: int, db: Session = Depends(get_async_db)):
+async def get_user(user_id: int, db: AsyncSession = Depends(get_async_db)):
     db_user = await user_services.get_user(db=db, user_id=user_id)
     if db_user is None:
         raise HTTPException(
@@ -61,7 +63,7 @@ async def get_user(user_id: int, db: Session = Depends(get_async_db)):
 # * Get all users
 @router.get("", response_model=list[user_schema.UserOut])
 async def get_users(
-    skip: int = 0, limit: int = 10, db: Session = Depends(get_async_db)
+    skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_async_db)
 ):
     users = await user_services.get_users(db=db, skip=skip, limit=limit)
     return users
@@ -72,7 +74,7 @@ async def get_users(
 async def update_user(
     user_id: int,
     updated_user: user_schema.UserUpdate,
-    db: Session = Depends(get_async_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: user_schema.UserOut = Depends(auth_services.get_current_user),
 ):
     checkUserAuthenticity(user_id, current_user_id=current_user.id)
@@ -85,7 +87,7 @@ async def update_user(
 @router.delete("/{user_id}", response_model=user_schema.UserOut)
 async def delete_user(
     user_id: int,
-    db: Session = Depends(get_async_db),
+    db: AsyncSession = Depends(get_async_db),
     current_user: user_schema.UserOut = Depends(auth_services.get_current_user),
 ):
     checkUserAuthenticity(user_id, current_user_id=current_user.id)

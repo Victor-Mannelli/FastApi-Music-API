@@ -1,4 +1,12 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    Boolean,
+    Table,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import relationship
 from app.config.setup import Base
 
@@ -64,6 +72,7 @@ class Playlist(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
+    private = Column(Boolean)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
 
     # The user who owns the playlist

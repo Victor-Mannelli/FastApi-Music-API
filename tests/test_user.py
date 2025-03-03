@@ -1,5 +1,6 @@
 import pytest
 
+headers = None  # Global variable
 new_user_data = {
     "username": "your_username",
     "email": "user@email.com",
@@ -9,7 +10,10 @@ login_data = {
     "email": new_user_data["email"],
     "password": new_user_data["password"],
 }
-headers = None  # Global variable
+updated_data = {
+    "username": "updated_username",
+    "email": "updated_email@email.com",
+}
 
 
 # registration
@@ -43,9 +47,6 @@ async def test_get_me(client):
     response = await client.get("/users/me", headers=headers)
     json_response = response.json()
 
-    print(response)
-    print(json_response)
-
     assert response.status_code == 200
     assert json_response["username"] == new_user_data["username"]
     assert json_response["email"] == new_user_data["email"]
@@ -57,7 +58,7 @@ async def test_get_users(client):
     response = await client.get("/users")
     json_response = response.json()
 
-    # Expect list with one user from seed
+    # Expect list with one user from seed + created user
     assert len(json_response) == 2
 
 
@@ -74,44 +75,29 @@ async def test_get_user_by_id(client):
 # update
 async def test_update_user(client):
     # * start update test
-    updated_data = {"username": "updated_username", "email": "updated_email@.com"}
+
     response = await client.put("users/2", json=updated_data, headers=headers)
     json_response = response.json()
 
     # Expect update to be successfull
     assert response.status_code == 200
     # Expect values to be updated
-    assert json_response["username"] == "updated_username"
-    assert json_response["email"] == "updated_email@.com"
+    assert json_response["username"] == updated_data["username"]
+    assert json_response["email"] == updated_data["email"]
 
 
 # delete
 async def test_delete_user(client):
-    # get token
-    login_data_after_update = {
-        "email": "updated_email@.com",
-        "password": login_data["password"],
-    }
-    login_response = await client.post(
-        "/users/login",
-        json=login_data_after_update,
-    )
-    assert login_response.status_code == 200
-
-    token = login_response.json()["access_token"]
-    assert token  # Ensure token exists
-    headers = {"Authorization": f"Bearer {token}"}
-
     check_user_response = await client.get("/users/me", headers=headers)
     assert check_user_response
     user = check_user_response.json()
 
-    assert user["email"] == login_data_after_update["email"]
+    assert user["email"] == updated_data["email"]
 
     # * start delete test
     response = await client.delete(f"/users/{user['id']}", headers=headers)
     response_json = response.json()
 
     assert response.status_code == 200
-    assert response_json["username"] == "updated_username"
-    assert response_json["email"] == login_data_after_update["email"]
+    assert response_json["username"] == updated_data["username"]
+    assert response_json["email"] == updated_data["email"]

@@ -41,7 +41,13 @@ async def seed_database(session):
         link="https://example.com/seed",
         added_by=user.id,
     )
-    playlist = Playlist(id=1, name="Seed Playlist", owner_id=user.id, musics=[music])
+    playlist = Playlist(
+        id=1,
+        name="Seed Playlist",
+        private=False,
+        owner_id=user.id,
+        musics=[music],
+    )
 
     session.add_all([user, music, playlist])
     await session.commit()
