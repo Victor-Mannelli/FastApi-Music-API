@@ -6,5 +6,8 @@ start:
 dbsetup:
 	alembic upgrade head
 
-dependencies:
+deps:
 	pip freeze > requirements.txt
+
+compose:
+	docker-compose build && docker-compose up

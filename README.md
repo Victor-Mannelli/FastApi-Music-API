@@ -39,14 +39,7 @@ pip install -r requirements.txt
 
 4️⃣ Set Up Environment Variables
 
-Create a .env file and define your database connection and JWT secret:
-
-```bash
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/playlist_db
-SECRET_KEY=your_secret_key_here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=1440 # 60 * 24
-```
+Create a .env file and use the .env.public to fill all that's needed
 
 5️⃣ Run Migrations
 
