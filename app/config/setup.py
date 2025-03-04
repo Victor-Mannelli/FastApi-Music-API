@@ -9,8 +9,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 # Fetches the DB connection from the env variable
 JWT_SECRET = os.getenv("JWT_SECRET")
 # Fetches the JWT_SECRET from the env variable
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+ALGORITHM = os.getenv("ALGORITHM")
 
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set. Check your .env file.")
