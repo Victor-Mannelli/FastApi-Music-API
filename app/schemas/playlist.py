@@ -1,6 +1,6 @@
 from pydantic import BaseModel  # Import BaseModel, the foundation for Pydantic models
 from typing import Optional  # Import Optional for fields that may be None
-from .music import MusicBase
+from .music import MusicOut
 
 
 class PlaylistBase(BaseModel):
@@ -17,7 +17,7 @@ class PlaylistOutWithMusics(PlaylistBase):
     id: int  # * User ID is required in the response
     owner_id: int
     private: bool
-    musics: Optional[list[MusicBase]]
+    musics: Optional[list[MusicOut]]
 
     class Config:
         from_attributes = True  # * This allows Pydantic to read data from ORM models

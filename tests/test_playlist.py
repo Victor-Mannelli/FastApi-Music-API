@@ -1,157 +1,133 @@
-import pytest
-
-headers = None  # Global variable
-login_data = {
-    "email": "seed_user@email.com",
-    "password": "password123",
-}
-new_playlist_data = {
-    "name": "New Private Playlist",
-    "private": True,
-}
-updated_playlist_data = {
-    "name": "updated_name",
-    "private": False,
-}
+from tests.test_helpers import (
+    seed_music_in_playlist,
+    seed_music_left_out,
+    private_seed_playlist,
+    public_seed_playlist,
+    seed_user,
+    get_token,
+)
 
 
-async def get_token(client):
-    global headers
-
-    # 1. Login with seeded account and get a token
-    login_response = await client.post(
-        "/users/login",
-        json=login_data,
-    )
-    assert login_response.status_code == 200
-
-    token = login_response.json()["access_token"]
-    assert token  # Ensure token exists
-
-    # saves token in header at global variable
-    headers = {"Authorization": f"Bearer {token}"}
-
-
-# Create playlist
 async def test_create_playlist(client):
-    await get_token(client)
+    new_playlist_data = {
+        "name": "New Private Playlist",
+        "private": True,
+    }
+    headers = await get_token(client)
     response = await client.post("/playlist", json=new_playlist_data, headers=headers)
     json_response = response.json()
 
     assert response.status_code == 201
+    assert json_response["id"]
     assert json_response["name"] == new_playlist_data["name"]
     assert json_response["private"] == new_playlist_data["private"]
-    assert json_response["owner_id"] == 1  # user id from seed
+    assert json_response["owner_id"] == seed_user["id"]
 
 
-async def test_get_user_playlist_as_owner(client):
-    response = await client.get("/playlist/from-user/1", headers=headers)
+async def test_get_user_playlists_as_owner(client):
+    headers = await get_token(client)
+    response = await client.get(
+        f"/playlist/from-user/{seed_user['id']}",
+        headers=headers,
+    )
     json_response = response.json()
 
     assert response.status_code == 200
-
     assert len(json_response) == 2
-
-    assert json_response[0]["name"] == "Seed Playlist"
-    assert json_response[0]["private"] == False
-
-    assert json_response[1]["name"] == new_playlist_data["name"]
-    assert json_response[1]["private"] == new_playlist_data["private"]
+    assert json_response[0]["name"] == public_seed_playlist["name"]
+    assert json_response[0]["private"] == public_seed_playlist["private"]
+    assert json_response[1]["name"] == private_seed_playlist["name"]
+    assert json_response[1]["private"] == private_seed_playlist["private"]
 
 
-async def test_get_user_playlist_as_random(client):
-    response = await client.get("/playlist/from-user/1")
+async def test_get_user_playlists_as_random(client):
+    response = await client.get(
+        f"/playlist/from-user/{seed_user['id']}",
+    )
     json_response = response.json()
 
     assert response.status_code == 200
-
     assert len(json_response) == 1
+    assert json_response[0]["name"] == public_seed_playlist["name"]
+    assert json_response[0]["private"] == public_seed_playlist["private"]
 
-    assert json_response[0]["name"] == "Seed Playlist"
-    assert json_response[0]["private"] == False
+
+async def test_add_left_out_music_to_playlist(client):
+    headers = await get_token(client)
+    response = await client.post(
+        f"/playlist/{public_seed_playlist['id']}/add-music/{seed_music_left_out['id']}",
+        headers=headers,
+    )
+    json_response = response.json()
+
+    assert response.status_code == 201
+    assert json_response["id"] == seed_music_left_out["id"]
+    assert json_response["artist"] == seed_music_left_out["artist"]
+    assert json_response["title"] == seed_music_left_out["title"]
+    assert json_response["link"] == seed_music_left_out["link"]
+    assert json_response["added_by"] == seed_music_left_out["added_by"]
 
 
-# async def test_add_music_to_playlist(client):
-#     # first add a music
-#     new_music_data = {
-#         "title": "Imagine",
-#         "artist": "John Lennon",
-#         "link": "https://example.com/imagine",
-#     }
-#     create_music_response = await client.post(
-#         "/music", json=new_music_data, headers=headers
-#     )
-#     assert create_music_response.status_code == 201
-
-#     music_json_response = create_music_response.json()
-#     assert music_json_response["title"] == new_music_data["title"]
-#     assert music_json_response["artist"] == new_music_data["artist"]
-#     assert music_json_response["link"] == new_music_data["link"]
-
-#     # add new music to seed playlist
-#     playlist_id = 1  # seed playlist id
-#     new_music_id = music_json_response["id"]
-#     add_music_response = await client.post(
-#         f"/playlist/{playlist_id}/add-music/{new_music_id}", headers=headers
-#     )
-#     add_music_json_response = add_music_response.json()
-
-# assert add_music_response.status_code == 201
-# assert add_music_json_response["id"] == music_json_response["id"]
-# assert add_music_json_response["artist"] == music_json_response["artist"]
-# assert add_music_json_response["title"] == music_json_response["title"]
-# assert add_music_json_response["link"] == music_json_response["link"]
-# assert add_music_json_response["added_by"] == music_json_response["added_by"]
+async def test_add_already_added_music_to_playlist(client):
+    headers = await get_token(client)
+    response = await client.post(
+        f"/playlist/{public_seed_playlist['id']}/add-music/{seed_music_in_playlist['id']}",
+        headers=headers,
+    )
+    assert response.status_code == 409
 
 
 async def test_get_musics_from_public_playlist_as_unknown(client):
-    playlist_id = 1  # seed playlist id that should have the seed music
-    response = await client.get(f"/playlist/{playlist_id}/musics")
+    response = await client.get(f"/playlist/{public_seed_playlist['id']}/musics")
     json_response = response.json()
 
     assert response.status_code == 200
 
-    assert json_response["name"] == "Seed Playlist"
-    assert json_response["private"] == False
-    assert json_response["owner_id"] == 1  # seed user id
+    assert json_response["name"] == public_seed_playlist["name"]
+    assert json_response["private"] == public_seed_playlist["private"]
+    assert json_response["owner_id"] == public_seed_playlist["owner_id"]
     assert len(json_response["musics"]) == 1
     assert json_response["musics"] == [
         {
-            "artist": "Seed Artist",
-            "link": "https://example.com/seed",
-            "title": "Seed Song",
+            "id": seed_music_in_playlist["id"],
+            "title": seed_music_in_playlist["title"],
+            "artist": seed_music_in_playlist["artist"],
+            "link": seed_music_in_playlist["link"],
+            "added_by": seed_music_in_playlist["added_by"],
         }
     ]
 
 
 async def test_get_musics_from_private_playlist_as_unknown(client):
-    playlist_id = 2  # private playlist created
-    response = await client.get(f"/playlist/{playlist_id}/musics")
+    response = await client.get(f"/playlist/{private_seed_playlist['id']}/musics")
 
     assert response.status_code == 401
 
 
 async def test_get_musics_from_private_playlist_as_owner(client):
-    playlist_id = 2  # private playlist created
-    response = await client.get(f"/playlist/{playlist_id}/musics", headers=headers)
+    headers = await get_token(client)
+    response = await client.get(
+        f"/playlist/{private_seed_playlist['id']}/musics",
+        headers=headers,
+    )
     json_response = response.json()
 
     assert response.status_code == 200
-    assert json_response["name"] == new_playlist_data["name"]
-    assert json_response["private"] == new_playlist_data["private"] == True
-    assert json_response["owner_id"] == 1  # seed user id
-    assert json_response["id"] == 2  # second playlist created
-    assert len(json_response["musics"]) == 0
+    assert json_response["name"] == private_seed_playlist["name"]
+    assert json_response["private"] == private_seed_playlist["private"] == True
+    assert json_response["owner_id"] == private_seed_playlist["owner_id"]
+    assert json_response["id"] == private_seed_playlist["id"]
+    assert json_response["musics"] == [seed_music_in_playlist]
 
 
-async def test_update_playlist_as_unknown(client):
-    playlist_id = 2  # private playlist created
+async def test_update_playlist(client):
+    headers = await get_token(client)
     updated_data = {
         "name": "updated_name",
         "private": False,
     }
     response = await client.put(
-        f"/playlist/{playlist_id}",
+        f"/playlist/{private_seed_playlist['id']}",
         json=updated_data,
         headers=headers,
     )
@@ -160,16 +136,34 @@ async def test_update_playlist_as_unknown(client):
     assert response.status_code == 200
     assert json_response["name"] == updated_data["name"]
     assert json_response["private"] == updated_data["private"]
-    assert json_response["id"] == playlist_id
+    assert json_response["id"] == private_seed_playlist["id"]
 
 
 async def test_delete_playlist(client):
-    playlist_id = 2  # private playlist created
-    response = await client.delete(f"/playlist/{playlist_id}", headers=headers)
+    headers = await get_token(client)
+    response = await client.delete(
+        f"/playlist/{private_seed_playlist['id']}",
+        headers=headers,
+    )
     json_response = response.json()
 
     assert response.status_code == 200
-    assert json_response["name"] == updated_playlist_data["name"]
-    assert json_response["private"] == updated_playlist_data["private"]
-    # id 1 from the seed user, used to create the new playlist
-    assert json_response["owner_id"] == 1  # seed user
+    assert json_response["name"] == private_seed_playlist["name"]
+    assert json_response["private"] == private_seed_playlist["private"]
+    assert json_response["owner_id"] == private_seed_playlist["owner_id"]
+
+
+async def test_remove_music_from_playlist(client):
+    headers = await get_token(client)
+    response = await client.put(
+        f"/playlist/{public_seed_playlist['id']}/remove-music/{seed_music_in_playlist['id']}",
+        headers=headers,
+    )
+    json_response = response.json()
+
+    response.status_code == 200
+    assert json_response["id"] == seed_music_in_playlist["id"]
+    assert json_response["title"] == seed_music_in_playlist["title"]
+    assert json_response["artist"] == seed_music_in_playlist["artist"]
+    assert json_response["link"] == seed_music_in_playlist["link"]
+    assert json_response["added_by"] == seed_music_in_playlist["added_by"]

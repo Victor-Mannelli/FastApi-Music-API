@@ -88,7 +88,7 @@ async def get_playlist_musics(
 # * Remove music from playlist
 @router.put(
     "/{playlist_id}/remove-music/{music_id}",
-    response_model=playstlist_schema.PlaylistOutWithMusics,
+    response_model=music_schema.MusicOut,
 )
 async def remove_music_from_playlist(
     playlist_id: int,
@@ -96,21 +96,11 @@ async def remove_music_from_playlist(
     db: AsyncSession = Depends(get_async_db),
     current_user: user_schema.UserOut = Depends(auth_services.get_current_user),
 ):
-    playlist = await playlist_services.get_playlist_by_id(
-        db=db, playlist_id=playlist_id
-    )
-    music = await music_services.get_music_by_id(db=db, music_id=music_id)
-    if not playlist or not music:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Playlist or music not found"
-        )
-    if playlist.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only remove music from your own playlists",
-        )
     return await playlist_services.remove_music_from_playlist(
-        db=db, music_id=music_id, playlist_id=playlist_id
+        requester_id=current_user.id,
+        playlist_id=playlist_id,
+        music_id=music_id,
+        db=db,
     )
 
 

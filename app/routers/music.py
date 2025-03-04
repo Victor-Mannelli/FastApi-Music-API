@@ -36,7 +36,7 @@ async def get_musics(
 
 
 # * Get specific user added musics
-@router.get("/{user_id}", response_model=list[music_schema.MusicOut])
+@router.get("/from-user/{user_id}", response_model=list[music_schema.MusicOut])
 async def get_user_added_musics(
     user_id: int,
     skip: int = 0,
