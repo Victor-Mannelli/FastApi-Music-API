@@ -10,4 +10,4 @@ deps:
 	pip freeze > requirements.txt
 
 compose:
-	docker-compose build && docker-compose up
+	docker compose down -v && docker compose up --build

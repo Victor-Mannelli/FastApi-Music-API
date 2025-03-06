@@ -1,25 +1,43 @@
-alembic==1.14.1 # (for migrations)
-aiosqlite==0.21.0 # (needed for testing with SQLite in-memory database)
-pytest==8.3.4 # (for testing)
-pytest-asyncio==0.25.3 # (for async testing with pytest)
-SQLAlchemy==2.0.38 # (for database handling)
-psycopg2-binary==2.9.10 # (for PostgreSQL connection)
-pydantic==2.10.6 # (for data validation)
-fastapi==0.115.8 # (for API)
-httpx==0.28.1 # (for making async HTTP requests)
-python-dotenv==1.0.1 # (for .env)
-asyncpg==0.30.0 # (for async PostgreSQL driver)
-greenlet==3.1.1 # (used internally by SQLAlchemy with psycopg2)
-bcrypt==3.2.0 # (for password hashing)
-passlib==1.7.4 # (for password hashing, works with bcrypt)
-PyJWT==2.3.0 # (for JWT token handling)
-pyOpenSSL==21.0.0 # (for SSL/TLS support)
-SecretStorage==3.3.1 # (for securely storing secrets)
-cryptography==3.4.8 # (for cryptographic operations)
-uvicorn==0.34.0 # (ASGI server for running FastAPI)
-h11==0.14.0 # (HTTP/1.1 implementation used by Uvicorn)
-starlette==0.45.3 # (lightweight ASGI framework used by FastAPI)
-anyio==4.8.0 # (provides async networking and concurrency, required by Starlette)
-exceptiongroup==1.2.2 # (for handling multiple exceptions in async code)
-sniffio==1.3.1 # (detects the current async library being used)
-typing_extensions==4.12.2 # (provides additional type hints, used by FastAPI and Starlette)
+aiosqlite==0.21.0
+alembic==1.14.1
+annotated-types==0.7.0
+anyio==4.8.0
+async-timeout==5.0.1
+asyncio==3.4.3
+asyncpg==0.30.0
+bcrypt==3.2.0
+certifi==2025.1.31
+cffi==1.17.1
+click==8.1.8
+cryptography==3.4.8
+exceptiongroup==1.2.2
+fastapi==0.115.8
+greenlet==3.1.1
+h11==0.14.0
+httpcore==1.0.7
+httpx==0.28.1
+idna==3.10
+iniconfig==2.0.0
+jeepney==0.9.0
+Mako==1.3.9
+MarkupSafe==3.0.2
+packaging==24.2
+passlib==1.7.4
+pluggy==1.5.0
+psycopg2-binary==2.9.10
+pycparser==2.22
+pydantic==2.10.6
+pydantic_core==2.27.2
+PyJWT==2.3.0
+pyOpenSSL==21.0.0
+pytest==8.3.4
+pytest-asyncio==0.25.3
+python-dotenv==1.0.1
+SecretStorage==3.3.1
+six==1.17.0
+sniffio==1.3.1
+SQLAlchemy==2.0.38
+starlette==0.45.3
+tomli==2.2.1
+typing_extensions==4.12.2
+uvicorn==0.34.0

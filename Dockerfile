@@ -2,21 +2,14 @@ FROM python:3.11-alpine
 
 WORKDIR /app
 
-# Install bash
-RUN apk add --no-cache bash
+# Install bash and postgresql client using apk
+RUN apk add --no-cache bash postgresql-client
 
 # Copy all files to the /app directory
 COPY . .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Set environment variables
-ARG DATABASE_URL
-ENV DATABASE_URL=$DATABASE_URL
-
-# Make sure wait-for-it.sh is executable
-RUN chmod +x /app/wait-for-it.sh
 
 # Set environment variables
 ENV PORT=8000
