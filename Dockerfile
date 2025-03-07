@@ -3,7 +3,7 @@ FROM python:3.11-alpine
 WORKDIR /app
 
 # Install bash and postgresql client using apk
-RUN apk add --no-cache bash postgresql-client
+RUN apk add --no-cache bash postgresql-client make
 
 # Copy all files to the /app directory
 COPY . .

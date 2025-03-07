@@ -18,11 +18,11 @@ app.include_router(playlists_router)
 
 
 @app.get("/health")
-def health_check():
+async def health_check():
     try:
         # Using a context manager to automatically close the session
-        with AsyncSessionLocal() as db:
-            db.execute(text("SELECT 1"))  # Running a raw SQL query with text()
+        async with AsyncSessionLocal() as db:
+            await db.execute(text("SELECT 1"))  # Running a raw SQL query with text()
         return {"status": "Database connected!"}
     except Exception as e:
         # Log the exception details
