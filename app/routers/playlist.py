@@ -10,8 +10,11 @@ from ..schemas import music as music_schema
 from ..schemas import user as user_schema
 from ..db.core import get_async_db
 
-router = APIRouter(prefix="/playlist")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+router = APIRouter(
+    prefix="/playlist",
+    tags=["Playlist"],
+)
 
 
 # * Create a playlist

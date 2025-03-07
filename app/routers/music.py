@@ -7,7 +7,10 @@ from ..schemas import music as music_schema
 from ..schemas import user as user_schema
 from ..db.core import get_async_db
 
-router = APIRouter(prefix="/music")
+router = APIRouter(
+    prefix="/music",
+    tags=["Music"],
+)
 
 
 # * Add music to the db

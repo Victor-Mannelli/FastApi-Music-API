@@ -8,7 +8,10 @@ from app.schemas import user as user_schema
 from app.db.core import get_async_db
 from datetime import timedelta
 
-router = APIRouter(prefix="/users")
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"],
+)
 
 
 # * Get user info and checks if token is valid
