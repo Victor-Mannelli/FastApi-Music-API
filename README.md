@@ -39,23 +39,28 @@ pip install -r requirements.txt
 
 4️⃣ Set Up Environment Variables
 
-Create a .env file and use the .env.public to fill all that's needed
-
-5️⃣ Run Migrations
-
-```bash
-alembic upgrade head
-```
-
-6️⃣ Start the Server
+Create a .env file and use the .env.public to fill all that's needed!
+Be carefull to check if your .env file is being correctly seen by the docker compose by running the command:
 
 ```bash
-uvicorn main:app --reload
-# or use the makefile command
-make start
+docker compose config
 ```
+
+5️⃣ Run the docker compose to create the api and database containers
+
+```bash
+docker compose up --build
+# or 
+make compose
+```
+
+# Now the containers should be running!
 
 The API will be available at: http://localhost:8000
+
+# 📖 API Endpoints
+
+While running the app you can check the end point documentation at http://localhost:8000/docs
 
 # 🧪 Running Tests
 
@@ -64,10 +69,6 @@ To run the test suite, use:
 ```bash
 pytest
 ```
-
-# 📖 API Endpoints
-
-While running the app you can check the end point documentation at http://localhost:8000/docs
 
 # 💡 Lessons Learned
 
