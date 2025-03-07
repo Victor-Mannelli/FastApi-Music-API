@@ -1,6 +1,6 @@
 import logging
-from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
+from fastapi import FastAPI, HTTPException
 from app.config.setup import AsyncSessionLocal
 from .routers.user import router as users_router
 from .routers.music import router as musics_router
@@ -17,7 +17,7 @@ app.include_router(musics_router)
 app.include_router(playlists_router)
 
 
-@app.get("/health")
+@app.get("/")
 async def health_check():
     try:
         # Using a context manager to automatically close the session

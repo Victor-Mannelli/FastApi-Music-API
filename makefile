@@ -13,8 +13,11 @@ dbsetup:
 deps:
 	pip freeze > requirements.txt
 
-compose:
+restart-compose:
 	docker compose down -v && docker compose up --build
+
+compose:
+	docker compose up --build
 
 clear-cache:
 	find . -name "__pycache__" -type d -exec rm -rf {} +
