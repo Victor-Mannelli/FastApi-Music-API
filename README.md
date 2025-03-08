@@ -54,15 +54,15 @@ docker compose up --build
 make compose
 ```
 
-# Now the containers should be running!
+## Now the containers should be running!
 
 The API will be available at: http://localhost:8000
 
-# 📖 API Endpoints
+## 📖 API Endpoints
 
 While running the app you can check the end point documentation at http://localhost:8000/docs
 
-# 🧪 Running Tests
+## 🧪 Running Tests
 
 To run the test suite, use:
 
@@ -70,7 +70,7 @@ To run the test suite, use:
 pytest
 ```
 
-# 💡 Lessons Learned
+## 💡 Lessons Learned
 
 - SQLAlchemy and Alembic provide a powerful ORM and migration system
 - Pydantic is a great tool for request validation and response serialization
@@ -79,10 +79,10 @@ pytest
 - Changing from Sync to Async SqlAlchemy request setup can change the whole project 
 - Greenlet errors are really annoying
 
-# 📜 License
+## 📜 License
 
 This project is licensed under the MIT License. Feel free to use and modify it!
 
-# ✨ Contributions & Feedback
+## ✨ Contributions & Feedback
 
 If you have any suggestions, feel free to submit an issue or pull request. Contributions are always welcome! 🎉
