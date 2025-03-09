@@ -18,7 +18,7 @@ This project is a structured backend built with FastAPI, following a well-organi
 1️⃣ Clone the Repository
 
 ```bash 
-git clone https://github.com/Victor-Mannelli/Python-Music-API.git
+git clone https://github.com/Victor-Mannelli/Python-Music-API.git fastapi-music-playlist
 # and
 cd fastapi-music-playlist
 ```
